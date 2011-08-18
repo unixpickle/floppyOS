@@ -1,0 +1,4 @@
+
+void loadIDT ();
+void configurePIT ();
+
