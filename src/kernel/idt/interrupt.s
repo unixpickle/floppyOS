@@ -123,6 +123,7 @@ gpfException:			db 'Exception: general protection fault',10,0
 
 extern kaddtime
 
+extern ktask_switch
 global handleHardwareTimer
 handleHardwareTimer:
 	cli
@@ -139,13 +140,14 @@ handleHardwareTimer:
 	call PIC_sendEOI
 	pop eax
 
+	call ktask_switch
+
 	popad
 	iret
 
-hardwareTimerTick: db 'Timer tick.',10,0
-
 global keyPress
 keyPress:
+	cli
 	pushad
 	;mov ebx, keyPressStr
 	;push ebx

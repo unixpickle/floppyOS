@@ -40,7 +40,7 @@ int main (int argc, char * argv[]) {
 	fseek(fp, 512*3, SEEK_SET);
 	fwrite(boot_buf, 1, length, fp);
 	
-	// testprog (sector 20)
+	// testprog (sector 3)
 	bzero(boot_buf, 512);
 	fread(boot_buf, 1, 512, testprog);
 	fseek(fp, 512*2, SEEK_SET);

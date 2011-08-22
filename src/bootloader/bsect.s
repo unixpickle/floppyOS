@@ -121,7 +121,7 @@ videosel equ $-gdt					; ie 18h,next gdt entry
 	db 0x00							; byte granularity 16 bit 
 	db 0x00
 localTable equ $-gdt				; ie 20h,next gdt entry
-	dw 0x1FF						; limit to 64 descriptors
+	dw 0xf							; limit to 2 descriptors
 	dw 0x8000						; base address
 	db 0x0
 	db 0x82							; TODO: figure out the right type

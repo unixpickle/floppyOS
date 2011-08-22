@@ -27,4 +27,9 @@ int strlen (const char * input);
  */
 void kdelay (int ms);
 
+/**
+ * Copy a buffer
+ */
+void kmemcpy (char * dest, const char * source, int length);
+
 #endif

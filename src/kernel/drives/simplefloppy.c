@@ -37,16 +37,20 @@ osStatus floppy_setup () {
 	// 	return osGeneralError;
 	// }
 	// todo: use version here
+	// 	
 
 	if (floppy_configure(true, false, false, 8) != osOK) {
 		return osGeneralError;
 	}
+
 	if (floppy_lock() != osOK) {
 		return osGeneralError;
 	}
+
 	if (floppy_reset() != osOK) {
 		return osGeneralError;
 	}
+
 	// configure all present drives
 	FloppyDriveList drives;
 	if (floppy_get_list(&drives) != osOK) {
@@ -56,6 +60,7 @@ osStatus floppy_setup () {
 	for (i = 0; i < 4; i++) {
 		if (drives.drives[i].exists == true) {
 			if (floppy_recal(drives.drives[i], i) != osOK) {
+				kprint("Recal failed  ");
 				return osGeneralError;
 			}
 		}
