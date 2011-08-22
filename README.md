@@ -10,7 +10,7 @@ What can it do?
 
 Very little.  The kernel itself contains a file ```kmain.c``` that contains the main routine for the OS.  This routine sets up some interrupts, programs the PIT, and then goes into an infinite loop.  This is a good setup for testing drivers and other subroutines because I simply need to add my test to the main function and I know that it will be run.
 
-Currently when you type a lower-case ASCII letter on your keyboard, that letter prints out on the screen.  Typing any other character or pressing any hot key (including shift) will print a '?' character.
+At the bottom of the ```kmain()``` function is a loop.  This loop reads a character from the keyboard, and outputs it to the screen.  If this loop is reached, you can type any ASCII letter or digit, or hit enter for a line feed.  In the future this functionality will be a polling system call and will allow multiple tasks to access the keyboard simultaniously.
 
 The kernel does receive timer interrupts, and maintains a "system clock" of sorts.  This clock allows for delays and timeouts, but not much more.
 
