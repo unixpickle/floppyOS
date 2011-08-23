@@ -12,8 +12,6 @@ extern khandle_key
 	mov ax, 0x10
 	mov ds, ax
 	mov ss, ax
-	push bx
-	
 
 %endmacro
 
@@ -21,8 +19,6 @@ extern khandle_key
 
 	pop bx
 	mov ss, bx
-	pop ax
-	mov ss, ax
 	pop ax
 	mov ds, ax
 
@@ -63,6 +59,7 @@ handleSysCall:
 	
 	mov eax, userMsg
 	push eax
+	cli
 	call kprint
 	add esp, 4
 	
@@ -102,21 +99,21 @@ unknownMsg: db 'Exception: unknown cause',10,0
 
 global handleGPFault
 handleGPFault:
+	cli
 	pushad
 	systemSelectors
-	mov ax, ds
-	push ax
-	mov ax, 0x10
-	mov dx, ax
+
 	mov eax, gpfException
 	push eax
 	call kprint
-	pop eax
+	add esp, 4
+
+	sti
 gpspin: jmp $
-	pop ax
-	mov ds, ax
+
 	restSystemSelectors
 	popad
+	add esp, 4 ; error code
 	iret
 
 gpfException:			db 'Exception: general protection fault',10,0
@@ -128,6 +125,7 @@ global handleHardwareTimer
 handleHardwareTimer:
 	cli
 	pushad
+	systemSelectors
 	
 	; add 10 ms to system on time.
 	mov eax, 10
@@ -147,12 +145,7 @@ global keyPress
 keyPress:
 	cli
 	pushad
-	;mov ebx, keyPressStr
-	;push ebx
-	;call kprint
-	;add esp, 4
 
-	; get the scan code
 waitScan:
 	in al, 0x64
 	and al, 0x01
@@ -171,6 +164,4 @@ waitScan:
 
 	popad
 	iret
-
-keyPressStr: db 'Key press interrupt.',10,0
 

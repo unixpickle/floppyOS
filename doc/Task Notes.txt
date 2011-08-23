@@ -1,0 +1,45 @@
+During the timer ISR to stack looks as follows:
+
+--- On context switch ---
+ dw 0
+ dw ss
+ dq esp
+-------- ~Always --------
+ dq eflags
+ dw 0
+ dw (old) cs
+ dq (old) eip
+
+==    pushad     ==
+
+ dq eax
+ dq ecx
+ dq edx
+ dq ebx
+ dq esp
+ dq ebp
+ dq esi
+ dq edi
+
+==   Selectors   ==
+
+ dw ds
+ dw ss
+
+
+Kernel memory map:
+
+0xb8000   Video memory
+0x9000    TSS base address
+0x5000    Test programs
+0x500     Kernel store
+	0x500 to 0x503   Kernel time
+	0x505            Floppy IRQ6 boolean
+	0x506            Key modifiers
+	0x507            Last key
+	0x508            Last key ID
+	0x509 to 0x50C   Task count
+	0x50d to 0x510   Current task index
+	0x511 to 0x514   Incrementing PID
+0x20000   Task list buffer
+0x100000  Tasks' address space

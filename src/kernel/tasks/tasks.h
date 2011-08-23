@@ -5,7 +5,7 @@
 #define kTaskCurrent (int *)0x50D
 #define kTaskPID (pid_t *)0x511
 
-#define kTaskSpaceStart (void *)0x30000
+#define kTaskSpaceStart (void *)0x100000
 #define kTaskSpacePerTask 0x10000
 #define kTaskSpacePerKernTask 0x10000
 
@@ -14,20 +14,22 @@ typedef unsigned int pid_t;
 typedef struct {
 	char ldt[16];
 	pid_t pid;
+	unsigned int edi;
+	unsigned int esi;
 	unsigned int ebp;
 	unsigned int esp;
-	unsigned int eax;
 	unsigned int ebx;
-	unsigned int ecx;
 	unsigned int edx;
-	unsigned int esi;
-	unsigned int edi;
-	unsigned int ss;
+	unsigned int ecx;
+	unsigned int eax;
 	unsigned int ds;
+	unsigned int ss;
 	unsigned int gs;
 	unsigned int fs;
 	unsigned int es;
 	unsigned int cs;
+	unsigned int eip;
+	unsigned int eflags;
 	char * basePtr;
 } __attribute__((__packed__)) task_t;
 

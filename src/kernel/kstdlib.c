@@ -44,25 +44,3 @@ void kmemcpy (char * dest, const char * source, int length) {
 	}
 }
 
-char scan_code_to_ascii (unsigned char scanCode) {
-	if (scanCode >= 16 && scanCode <= 25) {
-		const char * chars = "qwertyuiop";
-		return chars[scanCode - 16];
-	} else if (scanCode >= 30 && scanCode <= 38) {
-		const char * chars = "asdfghjkl";
-		return chars[scanCode - 30];
-	} else if (scanCode >= 44 && scanCode <= 50) {
-		const char * chars = "zxcvbnm";
-		return chars[scanCode - 44];
-	} else if (scanCode == 57) {
-		return ' ';
-	} else if (scanCode > 1 && scanCode < 11) {
-		return (scanCode - 2) + '1';
-	} else if (scanCode == 11) {
-		return '0';
-	} else if (scanCode == 28) {
-		return '\n';
-	}
-	return 0;
-}
-

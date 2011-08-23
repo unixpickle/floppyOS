@@ -105,21 +105,13 @@ void kmain () {
 
 void khandle_key (unsigned int scanCode) {
 	keyboard_handle_scan(scanCode);
-	// char str[4];
-	/*char str[16];
+	/*
+	char str[16];
 	itoa(str, (int)scanCode);
 	kprint("Scan code: ");
 	kprint(str);
 	kprint("\n");
-	return;
-	char scan = scan_code_to_ascii(scanCode);
-	if (scan) {
-		str[0] = scan;
-		str[1] = 0;
-		kprint(str);
-	} else if ((scanCode & 0x80) == 0) {
-		kprint("?");
-	}*/
+	*/
 }
 
 void kprintok () {
