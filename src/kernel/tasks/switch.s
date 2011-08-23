@@ -11,8 +11,13 @@ task_switch:
 	mov ebx, TASK_COUNT
 	mov eax, [ebx]
 	cmp eax, 0
+	je taskswitch_cancel
+	; if current task is -1, then there is no current task.
+	mov ebx, TASK_CURRENT
+	mov eax, [ebx]
+	cmp eax, 0xffffffff
 	jne savestate
-	jmp taskswitch_cancel
+	jmp taskswitch_loadnew
 
 savestate:
 	; get current task
@@ -96,10 +101,12 @@ noPLChange:
 	; simply subtrack the value of ESP by 3 quads. Otherwise, save the value
 	; of the SS and ESP from the stack.
 
+taskswitch_loadnew:
 	; setup our new task
 	call task_setcur
 	; load LDT
 	mov ebx, TASK_CURRENT
+	; TODO: do somethin wit this!!!!
 
 	; change TSS
 	; setup stack for iret
