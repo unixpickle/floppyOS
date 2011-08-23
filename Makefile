@@ -15,7 +15,6 @@ bin/kernel: bin/testprog bin/pit.o bin/interrupt.o bin/idtload.o bin/floppyasm.o
 	gcc -c src/kernel/kstdlib.c -fno-stack-protector -o bin/kstdlib.o $(INCLUDEFLAG)
 	nasm -f elf src/kernel/tasks/launch.s -o bin/launch.o
 	ld bin/kernentry.o bin/kmain.o bin/kstdio.o bin/launch.o bin/kstdlib.o bin/kpi.o bin/picinit.o bin/idtinit.o bin/idtload.o bin/interrupt.o bin/pit.o bin/floppyc.o bin/floppyasm.o bin/dma.o bin/simplefloppy.o bin/keyboard.o bin/tasks.o bin/switch.o -Ttext 0x1000 -e kentry --oformat binary -s -o bin/kernel
-	nasm -f bin src/kernel/test.s -o bin/test
 
 bin/switch.o:
 	nasm -f elf src/kernel/tasks/switch.s -o bin/switch.o
