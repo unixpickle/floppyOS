@@ -1,4 +1,4 @@
-#include "kscan.h"
+#include "kstdlib.h"
 
 void itoa (char * output, unsigned int input) {
 	if (input == 0) {
