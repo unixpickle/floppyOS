@@ -96,8 +96,38 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 }
 
 static void task_setup_ldt (task_t * task) {
-	// use the base ptr to configure the tasks Local Descriptor Table
-	
-	// set the tasks segments to point to the LDT
+	// LDT code selector
+	// 	size - 1
+	task->ldt[0] = 0xff;
+	task->ldt[1] = 0xff;
+	//  base (byte 0, 1, 2)
+	task->ldt[2] = ((unsigned int)task->basePtr & 0xff);
+	task->ldt[3] = ((unsigned int)task->basePtr >> 8) & 0xff;
+	task->ldt[4] = ((unsigned int)task->basePtr >> 16) & 0xff;
+	//  privilege level 3 (code segment flags)
+	task->ldt[5] = 0xfa;
+	//  AVL, 0, D, G
+	task->ldt[6] = 0xcf;
+	task->ldt[7] = ((unsigned int)task->basePtr >> 24) & 0xff;
+	// LDT data selector (same as code)
+	task->ldt[8] = task->ldt[0];
+	task->ldt[9] = task->ldt[1];
+	task->ldt[10] = task->ldt[2];
+	task->ldt[11] = task->ldt[3];
+	task->ldt[12] = task->ldt[4];
+	//  privilege level 3 (data segment flags)
+	task->ldt[13] = 0xf2;
+	task->ldt[14] = task->ldt[6];
+	task->ldt[15] = task->ldt[7];
+
+	// set the task's segments to point to the LDT
+	task->cs = 0x07; // rpl = 3, LDT = true, segment = 0
+	task->ds = 0x0f; // rpl = 3, LDT = true, segment = 1
+	task->gs = task->ds;
+	task->es = task->ds;
+	task->fs = task->ds;
+	task->ss = task->ds;
+	task->esp = 0xffff;
+	task->ebp = 0xffff;
 }
 
