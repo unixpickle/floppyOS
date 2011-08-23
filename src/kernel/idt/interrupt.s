@@ -123,7 +123,7 @@ gpfException:			db 'Exception: general protection fault',10,0
 
 extern kaddtime
 
-extern ktask_switch
+extern task_switch
 global handleHardwareTimer
 handleHardwareTimer:
 	cli
@@ -140,10 +140,8 @@ handleHardwareTimer:
 	call PIC_sendEOI
 	pop eax
 
-	call ktask_switch
-
-	popad
-	iret
+	; will soon be used for multitasking.
+	jmp task_switch
 
 global keyPress
 keyPress:

@@ -1,5 +1,7 @@
 #include "tasks.h"
 
+static void task_setup_ldt (task_t * task);
+
 void task_list_reset () {
 	int * countBuf = kTaskCount;
 	int * currBuf = kTaskCurrent;
@@ -81,7 +83,7 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 		}
 		if (isGood) {
 			break;
-		} else baseAddr += 0x10000;
+		} else baseAddr += kTaskSpacePerKernTask + kTaskSpacePerTask;
 	}
 	// create our task
 	task_t * ourTask = *countBuf * sizeof(task_t) + kTaskListBase;
@@ -89,6 +91,13 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 		((char *)ourTask)[i] = 0;
 	}
 	ourTask->basePtr = baseAddr;
+	task_setup_ldt(ourTask);
 	return osOK;
+}
+
+static void task_setup_ldt (task_t * task) {
+	// use the base ptr to configure the tasks Local Descriptor Table
+	
+	// set the tasks segments to point to the LDT
 }
 

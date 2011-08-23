@@ -6,6 +6,8 @@
 #define kTaskPID (pid_t *)0x511
 
 #define kTaskSpaceStart (void *)0x30000
+#define kTaskSpacePerTask 0x10000
+#define kTaskSpacePerKernTask 0x10000
 
 typedef unsigned int pid_t;
 
@@ -27,7 +29,7 @@ typedef struct {
 	unsigned int es;
 	unsigned int cs;
 	char * basePtr;
-} task_t;
+} __attribute__((__packed__)) task_t;
 
 
 void task_list_reset ();

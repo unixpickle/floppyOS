@@ -134,8 +134,3 @@ void kerror (const char * msg) {
 	kprint(msg);
 	while (1) { }
 }
-
-void ktask_switch () {
-	
-}
-
