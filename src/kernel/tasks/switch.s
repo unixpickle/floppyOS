@@ -11,7 +11,10 @@ task_switch:
 	mov ebx, TASK_COUNT
 	mov eax, [ebx]
 	cmp eax, 0
-	je taskswitch_cancel
+	jne check_current
+	jmp taskswitch_cancel
+
+check_current:
 	; if current task is -1, then there is no current task.
 	mov ebx, TASK_CURRENT
 	mov eax, [ebx]
