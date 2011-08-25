@@ -108,8 +108,8 @@ handleGPFault:
 	call kprint
 	add esp, 4
 
-	sti
 gpspin: jmp $
+	sti
 
 	restSystemSelectors
 	popad

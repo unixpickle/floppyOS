@@ -9,7 +9,7 @@ bin/kernel: bin/testprog bin/pit.o bin/interrupt.o bin/idtload.o bin/floppyasm.o
 	nasm -f elf src/kernel/kpi.s -o bin/kpi.o
 	nasm -f elf src/kernel/kernentry.s -o bin/kernentry.o
 	gcc -c src/kernel/kmain.c -fno-stack-protector -o bin/kmain.o $(INCLUDEFLAG)
-	gcc -c src/kernel/kstdio.c -o bin/kstdio.o $(INCLUDEFLAG)
+	gcc -c src/kernel/kstdio.c -fno-stack-protector  -o bin/kstdio.o $(INCLUDEFLAG)
 	nasm -f elf src/kernel/pic/picinit.s -o bin/picinit.o
 	gcc -c src/kernel/idt/idtinit.c -fno-stack-protector -o bin/idtinit.o $(INCLUDEFLAG)
 	gcc -c src/kernel/kstdlib.c -fno-stack-protector -o bin/kstdlib.o $(INCLUDEFLAG)

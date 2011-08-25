@@ -131,41 +131,46 @@ static void task_setup_ldt (task_t * task) {
 	task->ss = task->ds;
 	task->esp = 0xffff;
 	task->ebp = 0xffff;
+	task->ebx = 0;
+	task->eip = 0;	// start at first byte of code
 }
 
-void task_config (void * gdtBase) {
+task_t * task_config (void * gdtBase) {
 	int * curTask = kTaskCurrent;
 	if (*curTask < 0) return;
 	unsigned int taskBase = (unsigned int)(kTaskListBase);
-	taskBase += *curTask;
+	taskBase += *curTask * sizeof(task_t);
 	task_t * task = (task_t *)taskBase;
+	int i;
 	
 	// setup LDT entry for our TSS
 	unsigned char * ldtEntry = (unsigned char *)&((char *)gdtBase)[0x20];
+	unsigned char * tssEntry = (unsigned char *)&((char *)gdtBase)[0x28];
 	unsigned int ldtBase = (unsigned int)(task->ldt);
-	unsigned char * ldtBaseBuf = (unsigned char *)&gdtBase;
-
-	// disable interrupts while we touch system buffers
-	asm("cli");
+	unsigned char * ldtBaseBuf = (unsigned char *)&ldtBase;	
 
 	ldtEntry[2] = ldtBaseBuf[0];
 	ldtEntry[3] = ldtBaseBuf[1];
 	ldtEntry[4] = ldtBaseBuf[2];
 	ldtEntry[7] = ldtBaseBuf[3];
+	tssEntry[5] = 0xe9; // un-busy
+	tssEntry[6] = 0;
 
 	// fix-up TSS to fit our task
 
 	unsigned char * tssBuffer = (char *)0x9000;
 	unsigned short dataSelector = 0x13;
-	unsigned short codeSelector = 0x07;
-	unsigned int kernelStart = (unsigned int)(task->basePtr) + kTaskSpacePerTask;
+	unsigned int kernelStart = (unsigned int)(task->basePtr) + kTaskSpacePerTask + kTaskSpacePerKernTask - 1;
 	const unsigned char * kernelBuf = (const unsigned char *)(&kernelStart);
+	for (i = 0; i < 104; i++) {
+		tssBuffer[i] = 0;
+	}
 	// copy es
 	tssBuffer[0x48] = (unsigned char)(dataSelector & 0xff);
 	tssBuffer[0x49] = (unsigned char)((dataSelector >> 8) & 0xff);
 	// copy cs
-	tssBuffer[0x4C] = 0;
-	tssBuffer[0x4D] = 0xb; // kernel code selector
+	tssBuffer[0x4C] = 0xb;
+	tssBuffer[0x4D] = 0x0; // kernel code selector
 	// copy ss
 	tssBuffer[0x50] = (unsigned char)(dataSelector & 0xff);
 	tssBuffer[0x51] = (unsigned char)((dataSelector >> 8) & 0xff);
@@ -182,12 +187,10 @@ void task_config (void * gdtBase) {
 	tssBuffer[0x60] = (unsigned char)0x20;
 	tssBuffer[0x61] = (unsigned char)0;
 	// copy ESP0
-	kmemcpy((char *)&tssBuffer[4], (char *)kernelBuf, 4);
+	kmemcpy((char *)0x9004, (char *)kernelBuf, 4);
 	// copy ss0
 	tssBuffer[0x08] = 0x10;
 	tssBuffer[0x09] = 0;
-
-	// done messing; safe to re-enable
-	asm("sti");
+	return task;
 }
 

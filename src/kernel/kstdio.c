@@ -20,3 +20,12 @@ void kprint (const char * string) {
 		kcurmove((unsigned short)cursor);
 	}
 }
+
+extern void itoa (char * dest, unsigned int aNum);
+
+void kprintnum (unsigned int aNumber) {
+	char dest[16];
+	itoa(dest, aNumber);
+	kprint(dest);
+}
+

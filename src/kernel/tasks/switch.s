@@ -9,6 +9,7 @@ extern task_config
 
 global task_switch
 task_switch:
+	cli
 	; expects a jump directly after a timer interrupt is called.
 	mov ebx, TASK_COUNT
 	mov eax, [ebx]
@@ -21,7 +22,7 @@ check_current:
 	mov ebx, TASK_CURRENT
 	mov eax, [ebx]
 	cmp eax, 0xffffffff
-	jne savestate
+	;jne savestate
 	jmp taskswitch_loadnew
 
 savestate:
@@ -114,24 +115,92 @@ taskswitch_loadnew:
 	; and TSS descriptor contents
 	sgdt[0x51A]
 	mov ebx, 0x51A
-	mov eax, [ebx]
+	mov eax, [ebx+2] ; skip two-byte limit field
 	push eax
 	call task_config
 	add esp, 4
+	mov ebx, eax 				; task_t pointer
 
 	; change TSS and LDT
 	mov ax, 0x20
 	lldt ax
-	; mov ax, 0x2b
-	; ltr ax
-	; load up the GS, FS, ES registers
-	; setup stack for iret
-	; note, load ebx register like this
-	; push eax
-	; mov eax, [ebx+offset]
-	; mov ebx, eax
-	; pop eax
 	
+	str ax
+	cmp ax, 0x2b
+	je skipLTR
+	mov ax, 0x2b
+	ltr ax
+
+skipLTR:
+
+	; load up the GS, FS, ES registers
+	;; 52 = ds
+	;; 54 = ss
+	;; 56 = gs
+	;; 58 = fs
+	;; 60 = es
+	;; 62 = cs
+
+	; test our LDT
+	; mov ax, 0xf
+	; mov fs, ax
+	; jmp taskswitch_cancel
+	mov gs, [ebx+56]
+	mov fs, [ebx+58]
+	mov es, [ebx+60]
+	mov ax, [ebx+62]
+	; setup stack for iret
+	and ax, 3
+	jz standardIRET
+	; push special PL change stuff
+	mov eax, 0
+	mov ax, [ebx+54]
+	push eax
+	mov eax, [ebx+32]	; esp
+	push eax			; old esp
+	
+standardIRET:
+	;; 64 = eip
+	;; 68 = eflags
+	mov eax, [ebx+68]
+	push eax
+	or [esp], dword 0x200 ; set interrupt enable flag
+	mov eax, 0
+	mov ax, [ebx+62]
+	push eax
+	mov eax, [ebx+64]
+	push eax
+
+	; NOTE: stack currently configured for `iret`
+
+	; All that's left is to restore the registers
+	;; edi = 20
+	;; esi = 24
+	;; ebp = 28
+	;; esp = 32
+	;; ebx = 36
+	;; edx = 40
+	;; ecx = 44
+	;; eax = 48
+	mov edi, [ebx+20]
+	mov esi, [ebx+24]
+	mov ebp, [ebx+28]
+	mov edx, [ebx+40]
+	mov ecx, [ebx+44]
+	; old eax
+	mov eax, [ebx+48]
+	push eax
+	; old ebx
+	mov eax, [ebx+36]
+	push eax
+	; old ds
+	mov ax, [ebx+52]
+	mov ds, ax
+	; restore ebx and eax
+	pop ebx
+	pop eax
+	
+	iret
 	; perform task switching iret
 
 taskswitch_cancel:
@@ -144,9 +213,9 @@ taskswitch_cancel:
 	iret
 
 task_setcur:
-	mov ebx, 0x509
+	mov ebx, TASK_COUNT
 	mov ecx, [ebx]
-	mov ebx, 0x50D
+	mov ebx, TASK_CURRENT
 	mov eax, [ebx]
 	add eax, 1
 	cmp eax, ecx

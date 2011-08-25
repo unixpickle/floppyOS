@@ -42,5 +42,5 @@ pid_t task_next_pid ();
 osStatus task_kill (pid_t pid);
 osStatus task_start (char * codeBase, unsigned short length, pid_t * pid);
 
-void task_config (void * gdtBase);
+task_t * task_config (void * gdtBase);
 

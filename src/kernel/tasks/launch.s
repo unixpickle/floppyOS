@@ -149,7 +149,7 @@ configureTSS:
 	mov [ebx], ax			; set ss
 	mov [ebx+4], ax			; set ds
 	mov [ebx+8], ax			; set fs
-	mov [ebx+4], ax			; set gs
+	mov [ebx+4], ax			; set ds again?
 	mov [ebx-8], ax			; set es
 	
 	mov ebx, 0x9060
