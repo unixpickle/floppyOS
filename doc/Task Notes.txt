@@ -41,5 +41,10 @@ Kernel memory map:
 	0x509 to 0x50C   Task count
 	0x50d to 0x510   Current task index
 	0x511 to 0x514   Incrementing PID
+	0x515 to 0x51A   SGDT destination
 0x20000   Task list buffer
 0x100000  Tasks' address space
+
+
+TSS selector - 28h
+LDT selector - 20h

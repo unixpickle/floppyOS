@@ -85,6 +85,7 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 			break;
 		} else baseAddr += kTaskSpacePerKernTask + kTaskSpacePerTask;
 	}
+	kmemcpy(baseAddr, codeBase, length);
 	// create our task
 	task_t * ourTask = *countBuf * sizeof(task_t) + kTaskListBase;
 	for (i = 0; i < sizeof(task_t); i++) {
@@ -92,6 +93,7 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 	}
 	ourTask->basePtr = baseAddr;
 	task_setup_ldt(ourTask);
+	*countBuf += 1;
 	return osOK;
 }
 
@@ -129,5 +131,63 @@ static void task_setup_ldt (task_t * task) {
 	task->ss = task->ds;
 	task->esp = 0xffff;
 	task->ebp = 0xffff;
+}
+
+void task_config (void * gdtBase) {
+	int * curTask = kTaskCurrent;
+	if (*curTask < 0) return;
+	unsigned int taskBase = (unsigned int)(kTaskListBase);
+	taskBase += *curTask;
+	task_t * task = (task_t *)taskBase;
+	
+	// setup LDT entry for our TSS
+	unsigned char * ldtEntry = (unsigned char *)&((char *)gdtBase)[0x20];
+	unsigned int ldtBase = (unsigned int)(task->ldt);
+	unsigned char * ldtBaseBuf = (unsigned char *)&gdtBase;
+
+	// disable interrupts while we touch system buffers
+	asm("cli");
+
+	ldtEntry[2] = ldtBaseBuf[0];
+	ldtEntry[3] = ldtBaseBuf[1];
+	ldtEntry[4] = ldtBaseBuf[2];
+	ldtEntry[7] = ldtBaseBuf[3];
+
+	// fix-up TSS to fit our task
+
+	unsigned char * tssBuffer = (char *)0x9000;
+	unsigned short dataSelector = 0x13;
+	unsigned short codeSelector = 0x07;
+	unsigned int kernelStart = (unsigned int)(task->basePtr) + kTaskSpacePerTask;
+	const unsigned char * kernelBuf = (const unsigned char *)(&kernelStart);
+	// copy es
+	tssBuffer[0x48] = (unsigned char)(dataSelector & 0xff);
+	tssBuffer[0x49] = (unsigned char)((dataSelector >> 8) & 0xff);
+	// copy cs
+	tssBuffer[0x4C] = 0;
+	tssBuffer[0x4D] = 0xb; // kernel code selector
+	// copy ss
+	tssBuffer[0x50] = (unsigned char)(dataSelector & 0xff);
+	tssBuffer[0x51] = (unsigned char)((dataSelector >> 8) & 0xff);
+	// copy ds
+	tssBuffer[0x54] = (unsigned char)(dataSelector & 0xff);
+	tssBuffer[0x55] = (unsigned char)((dataSelector >> 8) & 0xff);
+	// copy fs
+	tssBuffer[0x58] = (unsigned char)(dataSelector & 0xff);
+	tssBuffer[0x59] = (unsigned char)((dataSelector >> 8) & 0xff);
+	// copy gs
+	tssBuffer[0x5C] = (unsigned char)(dataSelector & 0xff);
+	tssBuffer[0x5D] = (unsigned char)((dataSelector >> 8) & 0xff);
+	// copy ldtr
+	tssBuffer[0x60] = (unsigned char)0x20;
+	tssBuffer[0x61] = (unsigned char)0;
+	// copy ESP0
+	kmemcpy((char *)&tssBuffer[4], (char *)kernelBuf, 4);
+	// copy ss0
+	tssBuffer[0x08] = 0x10;
+	tssBuffer[0x09] = 0;
+
+	// done messing; safe to re-enable
+	asm("sti");
 }
 

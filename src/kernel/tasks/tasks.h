@@ -22,12 +22,12 @@ typedef struct {
 	unsigned int edx;
 	unsigned int ecx;
 	unsigned int eax;
-	unsigned int ds;
-	unsigned int ss;
-	unsigned int gs;
-	unsigned int fs;
-	unsigned int es;
-	unsigned int cs;
+	unsigned short ds;
+	unsigned short ss;
+	unsigned short gs;
+	unsigned short fs;
+	unsigned short es;
+	unsigned short cs;
 	unsigned int eip;
 	unsigned int eflags;
 	char * basePtr;
@@ -41,4 +41,6 @@ osStatus task_get (pid_t pid, task_t * destination);
 pid_t task_next_pid ();
 osStatus task_kill (pid_t pid);
 osStatus task_start (char * codeBase, unsigned short length, pid_t * pid);
+
+void task_config (void * gdtBase);
 

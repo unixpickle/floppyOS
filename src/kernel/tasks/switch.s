@@ -5,6 +5,8 @@ TASK_CURRENT     equ 0x50D
 TASK_DATA_SIZE   equ 0x10000
 TASK_KERN_SIZE   equ 0x10000
 
+extern task_config
+
 global task_switch
 task_switch:
 	; expects a jump directly after a timer interrupt is called.
@@ -107,12 +109,29 @@ noPLChange:
 taskswitch_loadnew:
 	; setup our new task
 	call task_setcur
-	; load LDT
-	mov ebx, TASK_CURRENT
-	; TODO: do somethin wit this!!!!
 
-	; change TSS
+	; C subroutine for configuring the LDT segment descriptor
+	; and TSS descriptor contents
+	sgdt[0x51A]
+	mov ebx, 0x51A
+	mov eax, [ebx]
+	push eax
+	call task_config
+	add esp, 4
+
+	; change TSS and LDT
+	mov ax, 0x20
+	lldt ax
+	; mov ax, 0x2b
+	; ltr ax
+	; load up the GS, FS, ES registers
 	; setup stack for iret
+	; note, load ebx register like this
+	; push eax
+	; mov eax, [ebx+offset]
+	; mov ebx, eax
+	; pop eax
+	
 	; perform task switching iret
 
 taskswitch_cancel:

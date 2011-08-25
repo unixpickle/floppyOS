@@ -1,3 +1,6 @@
+; This file is legacy code that I used to test out how user-mode
+; works.  It shouldn't be used commercially, just as a test.
+
 extern kprint
 extern katoi
 
