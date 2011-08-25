@@ -25,3 +25,7 @@ If you are looking for something that will suck all of your time away in an inst
 * Multitasking or, rather, tasking at all would be nice!
 * Software interrupts for user-level APIs
 
+License
+=======
+
+FloppyOS is FREE SOFTWARE under the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a>.
