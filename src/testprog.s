@@ -6,5 +6,11 @@ org 0x0
 
 _start:
 	int 0x80
+	mov ecx, 0xfffffff
+
 myLoop:
-	jmp myLoop
+	sub ecx, 1
+	cmp ecx, 0
+	jne myLoop
+
+	jmp _start
