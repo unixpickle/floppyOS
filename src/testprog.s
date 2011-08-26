@@ -8,7 +8,7 @@ _start:
 	mov ebx, coolString
 	int 0x80
 spin:
-	; optional: makes other tasks get more CPU time
+	; makes other tasks get more CPU time
 	; by co-operating with the kernel
 	int 0x81
 	jmp spin

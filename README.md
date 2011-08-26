@@ -8,9 +8,11 @@ floppyOS takes its name from a simple concept.  Currently, the only storage devi
 What can it do?
 ===============
 
-Very little.  The kernel itself contains a file ```kmain.c``` that contains the main routine for the OS.  This routine sets up some interrupts, programs the PIT, and then goes into an infinite loop.  This is a good setup for testing drivers and other subroutines because I simply need to add my test to the main function and I know that it will be run.
+Very little.  The kernel itself contains a file ```kmain.c``` that contains the main routine for the OS.  This routine sets up some interrupts, programs the PIT, and then starts a task using the current scheduling system.  This is a good setup for testing drivers and other subroutines.  All one needs to do to test their new driver is add some code to ```kmain()```.
 
-At the bottom of the ```kmain()``` function is a loop.  This loop reads a character from the keyboard, and outputs it to the screen.  If this loop is reached, you can type any ASCII letter or digit, or hit enter for a line feed.  In the future this functionality will be a polling system call and will allow multiple tasks to access the keyboard simultaniously.
+Right now I am developing a small preemptive task scheduler.  This means that the kernel switches tasks using a timer interrupt, which is fired 100 times a second.  The current task system can successfully launch and maintain a task.  It probably can handle multiple tasks, but I haven't tested that yet.
+
+Currently, the ```kmain()``` function launches machine code that it reads from disk.  This code contains an ```int 0x80``` call to print "Hello, task world!" to the console.
 
 The kernel does receive timer interrupts, and maintains a "system clock" of sorts.  This clock allows for delays and timeouts, but not much more.
 
@@ -20,10 +22,19 @@ Areas for development
 If you are looking for something that will suck all of your time away in an instant, I've got a solution for you!  There are several fields that need to be worked on:
 
 * Additional hardware drivers for storage devices
-* Filesystem support (maybe I will make a custom FS, who knows?)
+* Filesystem support
 * A better bootloader
-* Multitasking or, rather, tasking at all would be nice!
+* Improved scheduling and lock system
 * Software interrupts for user-level APIs
+
+The Lock System
+---------------
+
+Any resources that may be shared between tasks need <i>locks</i>.  A lock allows for the system to reserve the use of a specific resource from all other processes.  For instance, the print system call locks a lock so that two processes cannot print at the same time.  If another process tries to print while one is already doing it, the second process will wait for the other one to unlock the lock.
+
+The source file <tt>kernel/tasks/lock.h</tt> declares some kernel-level locking functions.  These functions include ```lock_vector``` and ```unlock_vector```.  Both of these methods take a number from 1 to 32, indicating which vector entry to lock.  Even though these methods may only be called by the kernel, they assume that a process triggered the kernel to lock the lock.  Normally these methods should only be called by ISRs or functions called only by ISRs.
+
+You will also notice the ```lock_cpu()``` and ```unlock_cpu()``` functions.  These provide a simple recursive mechanism for locking and unlocking the current process.  After locking the CPU, a task switch will not take place until the CPU is unlocked.  This is handy if you want to receive hardware interrupts, but do not want task switches to occur.  Note that 256 ```lock_cpu()``` calls without matching unlock calls will cause the lock counter to wrap back to zero.
 
 License
 =======
