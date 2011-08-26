@@ -2,7 +2,7 @@
 #include <kernel/tasks/lock.h>
 
 void kprint (const char * string) {
-	lock_vector(kPrintLockNum);
+	// lock_vector(kPrintLockNum);
 	int i;
 	char c = 0;
 	i = 0;
@@ -21,7 +21,7 @@ void kprint (const char * string) {
 		}
 		kcurmove((unsigned short)cursor);
 	}
-	unlock_vector(kPrintLockNum);
+	// unlock_vector(kPrintLockNum);
 }
 
 extern void itoa (char * dest, unsigned int aNum);

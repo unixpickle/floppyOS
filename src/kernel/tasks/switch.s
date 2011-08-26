@@ -16,13 +16,13 @@ task_switch:
 	cli
 
 	mov ebx, TASK_LOCK_PTR
-	mov eax, [ebx]
-	cmp eax, 0
+	mov eax, 0
+	mov al, [ebx]
+	cmp al, 0
 	je taskswitch_begin
 	jmp taskswitch_cancel
 
 taskswitch_begin:
-
 	mov ebx, TASK_COUNT
 	mov eax, [ebx]
 	cmp eax, 0

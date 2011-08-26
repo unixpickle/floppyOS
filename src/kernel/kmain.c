@@ -72,19 +72,8 @@ void kmain () {
 	}
 	kprintok();
 
-/*
-	kprint("Printing buffer ...\n");
-	kdelay(500);
-	int p;
-	for (p = 0; p < 512; p++) {
-		char foo[2];
-		foo[0] = myBuf[p];
-		foo[1] = 0;
-		kprint(foo);
-		kdelay(40);
-	}
-	kprintok();
-*/
+	// let it know that we have IDTs set up.
+	lock_set_taskswitch(true);
 
 	kprint("Resetting task space ... ");
 	task_list_reset();
@@ -98,11 +87,12 @@ void kmain () {
 	unlock_cpu();
 	
 	// if our task didn't start, this should work.
+	asm("sti");
 	while (1) {
-		char kbuf[2];
+	/*	char kbuf[2];
 		kbuf[1] = 0;
 		kbuf[0] = keyboard_wait_key ();
-		kprint(kbuf);
+		kprint(kbuf); */
 	}
 }
 

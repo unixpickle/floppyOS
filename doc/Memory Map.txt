@@ -16,8 +16,8 @@ Kernel memory map:
 	0x515 to 0x51A   SGDT destination
 
 0x600     Lock array
-	0x600            Task switch allowed (false = not-allowed).
-	0x601            Reserved
+	0x600            Task switch allowed (0 = allowed).
+	0x601            Has configured 0x81 interrupt (false = no int 81h)
 	0x602 to 0x621   Mutex states (32 entries)
 
 0x20000   Task list buffer

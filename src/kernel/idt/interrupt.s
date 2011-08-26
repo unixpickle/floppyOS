@@ -1,8 +1,11 @@
+kPrintLockNum equ 1
 
 extern kprint
 extern kprintnum
 extern PIC_sendEOI
 extern khandle_key
+extern lock_vector
+extern unlock_vector
 
 %macro systemSelectors 0
 
@@ -61,6 +64,11 @@ handleSysCall:
 	pushad
 	systemSelectors
 
+	mov eax, kPrintLockNum
+	push eax
+	call lock_vector
+	add esp, 4
+
 	mov eax, [esp+20]
 
 	push eax
@@ -69,6 +77,11 @@ handleSysCall:
 
 	push eax
 	call kprint
+	add esp, 4
+
+	mov eax, kPrintLockNum
+	push eax
+	call unlock_vector
 	add esp, 4
 
 	restSystemSelectors
@@ -152,9 +165,6 @@ manualTaskSwitch:
 	cli
 	pushad
 	systemSelectors
-	mov eax, 0
-	mov ebx, 0x600
-	mov [ebx], eax ; enable task switch
 
 	jmp task_switch
 
