@@ -5,12 +5,12 @@ BITS 32
 org 0x0
 
 _start:
+	mov ebx, coolString
 	int 0x80
-	mov ecx, 0xfffffff
+spin:
+	; optional: makes other tasks get more CPU time
+	; by co-operating with the kernel
+	int 0x81
+	jmp spin
 
-myLoop:
-	sub ecx, 1
-	cmp ecx, 0
-	jne myLoop
-
-	jmp _start
+coolString: db 'Hello, task world!',10,0

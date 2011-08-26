@@ -7,6 +7,7 @@
 #include <kernel/drives/simplefloppy.h>
 #include <kernel/keyboard.h>
 #include <kernel/tasks/tasks.h>
+#include <kernel/tasks/lock.h>
 
 void kprintok ();
 void kprinterr ();
@@ -16,6 +17,8 @@ void kmain () {
 	int i;
 
 	task_list_reset();
+	lock_buff_reset();
+	lock_cpu();
 
 	kprint("Setting on time to 0 ... ");
 	ksettime(0);
@@ -83,7 +86,6 @@ void kmain () {
 	kprintok();
 */
 
-	asm("cli");
 	kprint("Resetting task space ... ");
 	task_list_reset();
 	kprintok();
@@ -93,8 +95,9 @@ void kmain () {
 		kprinterr();
 	}
 	kprintok();
-	asm("sti");
-
+	unlock_cpu();
+	
+	// if our task didn't start, this should work.
 	while (1) {
 		char kbuf[2];
 		kbuf[1] = 0;

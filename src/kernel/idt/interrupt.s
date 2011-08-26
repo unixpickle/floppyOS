@@ -1,5 +1,6 @@
 
 extern kprint
+extern kprintnum
 extern PIC_sendEOI
 extern khandle_key
 
@@ -43,7 +44,9 @@ handleMathException:
 	pushad
 	systemSelectors
 
-	mov eax, mathExceptionMsg
+	mov eax, [esp+20]
+	; calculate task address
+	
 	push eax
 	call kprint
 	add esp, 4
@@ -52,22 +55,25 @@ handleMathException:
 	popad
 	iret
 
+extern task_translate_addr
 global handleSysCall
 handleSysCall:
 	pushad
 	systemSelectors
-	
-	mov eax, userMsg
+
+	mov eax, [esp+20]
+
 	push eax
-	cli
+	call task_translate_addr
+	add esp, 4
+
+	push eax
 	call kprint
 	add esp, 4
-	
+
 	restSystemSelectors
 	popad
 	iret
-
-userMsg: db 'Hello, user mode!',10,0
 
 mathExceptionMsg: db 'Exception: Divide by zero',10,0
 
@@ -139,6 +145,17 @@ handleHardwareTimer:
 	pop eax
 
 	; will soon be used for multitasking.
+	jmp task_switch
+
+global manualTaskSwitch
+manualTaskSwitch:
+	cli
+	pushad
+	systemSelectors
+	mov eax, 0
+	mov ebx, 0x600
+	mov [ebx], eax ; enable task switch
+
 	jmp task_switch
 
 global keyPress

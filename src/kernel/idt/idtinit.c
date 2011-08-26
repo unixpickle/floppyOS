@@ -48,6 +48,7 @@ void configureIDT () {
 	setIDT(33, (unsigned)keyPress, 0x08, 0x8e);
 	setIDT(38, (unsigned)floppyCallback, 0x08, 0xee);
 	setIDT(0x80, (unsigned)handleSysCall, 0x08, 0xee);
+	setIDT(0x81, (unsigned)manualTaskSwitch, 0x08, 0xee);
 	mainTable.limit = 2048;
 	mainTable.base = (unsigned)&(mainTable.entries);
 }

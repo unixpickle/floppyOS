@@ -7,7 +7,7 @@ void itoa (char * output, unsigned int input) {
 		return;
 	}
 	char result[16];
-	int cur = input;
+	unsigned int cur = input;
 	int resIndex;
 	for (resIndex = 0; resIndex < 16; resIndex++) {
 		result[resIndex] = 0;

@@ -135,6 +135,13 @@ static void task_setup_ldt (task_t * task) {
 	task->eip = 0;	// start at first byte of code
 }
 
+void * task_translate_addr (void * existing) {
+	int * cur = kTaskCurrent;
+	unsigned int ptr = *cur * sizeof(task_t) + (unsigned int)kTaskListBase;
+	task_t * t = (task_t *)ptr;
+	return (void *)((unsigned int)(t->basePtr) + (unsigned int)existing);
+}
+
 task_t * task_config (void * gdtBase) {
 	int * curTask = kTaskCurrent;
 	if (*curTask < 0) return;

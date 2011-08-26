@@ -1,17 +1,28 @@
-TASK_OBJ_LEN     equ 76
+TASK_OBJ_LEN     equ 80
 TASK_LIST_BASE   equ 0x20000
 TASK_COUNT       equ 0x509
 TASK_CURRENT     equ 0x50D
 TASK_DATA_SIZE   equ 0x10000
 TASK_KERN_SIZE   equ 0x10000
+TASK_LOCK_PTR    equ 0x600
 
 extern task_config
 extern kprintnum
+extern kprint
 
+; expects a jump after a timer interrupt (or variant) is called.
 global task_switch
 task_switch:
 	cli
-	; expects a jump directly after a timer interrupt is called.
+
+	mov ebx, TASK_LOCK_PTR
+	mov eax, [ebx]
+	cmp eax, 0
+	je taskswitch_begin
+	jmp taskswitch_cancel
+
+taskswitch_begin:
+
 	mov ebx, TASK_COUNT
 	mov eax, [ebx]
 	cmp eax, 0
