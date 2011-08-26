@@ -28,13 +28,13 @@ check_current:
 
 savestate:
 	; DEBUG: this prevents task switching from occuring
-	jmp taskswitch_cancel
+	; jmp taskswitch_cancel
 	; get current task
 	mov ebx, TASK_CURRENT
 	mov eax, [ebx]
 	mov ecx, TASK_OBJ_LEN
 	mov edx, 0
-	imul ecx, eax
+	imul ecx
 	; eax now contains the offset in the list
 	mov ecx, TASK_LIST_BASE
 	add eax, ecx
@@ -65,9 +65,6 @@ skipRegister:
 
 copyRegisters32done:
 
-	; TODO: subtrack the value of ESP by 4 quads.
-	; or read from stack on PL switch
-
 ; now edi has ds, ss, gs, fs, es, cs
 	mov ebx, edi
 
@@ -90,9 +87,10 @@ copyRegisters32done:
 	; instruction pointer
 	mov eax, [esp+36]
 	mov [ebx+12], eax
+	
 	; eflags
 	mov eax, [esp+44]
-	mov [ebx+14], eax
+	mov [ebx+16], eax
 
 	mov ax, [esp+40]
 	; check for PL change
@@ -170,8 +168,10 @@ standardIRET:
 	push eax
 	or [esp], dword 0x200 ; set interrupt enable flag
 	mov eax, 0
+	; cs
 	mov ax, [ebx+62]
 	push eax
+	; eip
 	mov eax, [ebx+64]
 	push eax
 

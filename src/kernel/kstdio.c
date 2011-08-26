@@ -27,5 +27,6 @@ void kprintnum (unsigned int aNumber) {
 	char dest[16];
 	itoa(dest, aNumber);
 	kprint(dest);
+	kprint("\n");
 }
 
