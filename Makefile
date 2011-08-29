@@ -5,52 +5,66 @@ compile: bin/bsect bin/kernel
 bin/bsect: src/bootloader/bsect.s
 	nasm -f bin src/bootloader/bsect.s -o bin/bsect
 
-bin/kernel: bin/testprog bin/pit.o bin/interrupt.o bin/idtload.o bin/floppyasm.o bin/floppyc.o bin/dma.o bin/simplefloppy.o bin/keyboard.o bin/tasks.o bin/switch.o bin/lock.o
-	nasm -f elf src/kernel/kpi.s -o bin/kpi.o
-	nasm -f elf src/kernel/kernentry.s -o bin/kernentry.o
-	gcc -c src/kernel/kmain.c -fno-stack-protector -o bin/kmain.o $(INCLUDEFLAG)
-	gcc -c src/kernel/kstdio.c -fno-stack-protector  -o bin/kstdio.o $(INCLUDEFLAG)
-	nasm -f elf src/kernel/pic/picinit.s -o bin/picinit.o
-	gcc -c src/kernel/idt/idtinit.c -fno-stack-protector -o bin/idtinit.o $(INCLUDEFLAG)
-	gcc -c src/kernel/kstdlib.c -fno-stack-protector -o bin/kstdlib.o $(INCLUDEFLAG)
-	nasm -f elf src/kernel/tasks/launch.s -o bin/launch.o
-	ld bin/kernentry.o bin/kmain.o bin/kstdio.o bin/launch.o bin/kstdlib.o bin/kpi.o bin/picinit.o bin/idtinit.o bin/idtload.o bin/interrupt.o bin/pit.o bin/floppyc.o bin/floppyasm.o bin/dma.o bin/simplefloppy.o bin/keyboard.o bin/tasks.o bin/switch.o bin/lock.o -Ttext 0x1000 -e kentry --oformat binary -s -o bin/kernel
+bin/kernel: bin/kern bin/testprog bin/kern/pit.o bin/kern/interrupt.o bin/kern/idtload.o bin/kern/floppyasm.o bin/kern/floppyc.o bin/kern/dma.o bin/kern/simplefloppy.o bin/kern/keyboard.o bin/kern/tasks.o bin/kern/switch.o bin/kern/lock.o bin/kern/kpi.o bin/kern/kmain.o bin/kern/kstdio.o bin/kern/kstdlib.o bin/kern/picinit.o bin/kern/idtinit.o
+	nasm -f elf src/kernel/kernentry.s -o bin/kernentry.o	
+	ld bin/kernentry.o bin/kern/* -Ttext 0x1000 -e kentry --oformat binary -s -o bin/kernel
 
-bin/lock.o:
-	gcc -c src/kernel/tasks/lock.c -o bin/lock.o -fno-stack-protector $(INCLUDEFLAG)
+bin/kern:
+	mkdir bin/kern
+	
+bin/kern/idtinit.o:
+	gcc -c src/kernel/idt/idtinit.c -fno-stack-protector -o bin/kern/idtinit.o $(INCLUDEFLAG)
+	
+bin/kern/picinit.o:
+	nasm -f elf src/kernel/pic/picinit.s -o bin/kern/picinit.o
 
-bin/switch.o:
-	nasm -f elf src/kernel/tasks/switch.s -o bin/switch.o
+bin/kern/kstdlib.o: bin/kern
+	gcc -c src/kernel/kstdlib.c -fno-stack-protector -o bin/kern/kstdlib.o $(INCLUDEFLAG)
 
-bin/keyboard.o:
-	gcc -c src/kernel/keyboard.c -o bin/keyboard.o -fno-stack-protector $(INCLUDEFLAG)
+bin/kern/kstdio.o: bin/kern
+	gcc -c src/kernel/kstdio.c -fno-stack-protector  -o bin/kern/kstdio.o $(INCLUDEFLAG)
 
-bin/tasks.o:
-	gcc -c src/kernel/tasks/tasks.c -o bin/tasks.o -fno-stack-protector $(INCLUDEFLAG)
+bin/kern/kmain.o: bin/kern
+	gcc -c src/kernel/kmain.c -fno-stack-protector -o bin/kern/kmain.o $(INCLUDEFLAG)
 
-bin/simplefloppy.o:
-	gcc -c src/kernel/drives/simplefloppy.c -o bin/simplefloppy.o -fno-stack-protector $(INCLUDEFLAG)
+bin/kern/kpi.o: bin/kern
+	nasm -f elf src/kernel/kpi.s -o bin/kern/kpi.o
 
-bin/dma.o:
-	nasm -f elf src/kernel/drives/dma.s -o bin/dma.o
+bin/kern/lock.o: bin/kern
+	gcc -c src/kernel/tasks/lock.c -o bin/kern/lock.o -fno-stack-protector $(INCLUDEFLAG)
 
-bin/idtload.o:
-	nasm -f elf src/kernel/idt/idtload.s -o bin/idtload.o
+bin/kern/switch.o: bin/kern
+	nasm -f elf src/kernel/tasks/switch.s -o bin/kern/switch.o
 
-bin/interrupt.o:
-	nasm -f elf src/kernel/idt/interrupt.s -o bin/interrupt.o
+bin/kern/keyboard.o: bin/kern
+	gcc -c src/kernel/keyboard.c -o bin/kern/keyboard.o -fno-stack-protector $(INCLUDEFLAG)
 
-bin/pit.o:
-	nasm -f elf src/kernel/idt/pit.s -o bin/pit.o
+bin/kern/tasks.o: bin/kern
+	gcc -c src/kernel/tasks/tasks.c -o bin/kern/tasks.o -fno-stack-protector $(INCLUDEFLAG)
+
+bin/kern/simplefloppy.o: bin/kern
+	gcc -c src/kernel/drives/simplefloppy.c -o bin/kern/simplefloppy.o -fno-stack-protector $(INCLUDEFLAG)
+
+bin/kern/dma.o: bin/kern
+	nasm -f elf src/kernel/drives/dma.s -o bin/kern/dma.o
+
+bin/kern/idtload.o: bin/kern
+	nasm -f elf src/kernel/idt/idtload.s -o bin/kern/idtload.o
+
+bin/kern/interrupt.o: bin/kern
+	nasm -f elf src/kernel/idt/interrupt.s -o bin/kern/interrupt.o
+
+bin/kern/pit.o: bin/kern
+	nasm -f elf src/kernel/idt/pit.s -o bin/kern/pit.o
 
 bin/testprog:
 	nasm -f bin src/testprog.s -o bin/testprog
 
-bin/floppyasm.o:
-	nasm -f elf src/kernel/drives/floppy.s -o bin/floppyasm.o
+bin/kern/floppyasm.o: bin/kern
+	nasm -f elf src/kernel/drives/floppy.s -o bin/kern/floppyasm.o
 
-bin/floppyc.o:
-	gcc -c src/kernel/drives/floppy.c -o bin/floppyc.o -fno-stack-protector $(INCLUDEFLAG)
+bin/kern/floppyc.o: bin/kern
+	gcc -c src/kernel/drives/floppy.c -o bin/kern/floppyc.o -fno-stack-protector $(INCLUDEFLAG)
 
 image: bin/makeimg
 	cp template.img output.img
@@ -60,5 +74,5 @@ bin/makeimg: src/makeimg.c
 	gcc src/makeimg.c -o bin/makeimg
 
 clean:
-	rm bin/*
+	rm -r bin/*
 
