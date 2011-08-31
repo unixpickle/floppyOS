@@ -25,6 +25,42 @@ void itoa (char * output, unsigned int input) {
 	output[cur] = 0;
 }
 
+void itohs (char * buffer, unsigned int hexNum) {
+	// TODO: magic happens here.
+	int i, digNum;
+	unsigned int theNum = hexNum;
+	bool hasStarted = false;
+	unsigned char * buff = (unsigned char *)&theNum;
+	for (i = 0; i < 16; i++) {
+		buffer[i] = 0;
+	}
+	buffer[0] = '0';
+	buffer[1] = 'x';
+	buffer[2] = '0';
+	i = 2;
+	digNum = 7;
+	while (digNum >= 0 && digNum < 8) {
+		unsigned int num = 0; // will be 0 to 15
+		char aChar = 0;
+		unsigned int charIndex = digNum / 2;
+		if (digNum % 2 == 0) {
+			num = buff[charIndex] & 0xf;
+		} else {
+			num = (buff[charIndex] >> 4) & 0xf;
+		}
+		if (num != 0 || hasStarted) {
+			hasStarted = true;
+			if (num < 10) {
+				aChar = num + '0';
+			} else {
+				aChar = (num - 10) + 'A';
+			}
+			buffer[i++] = aChar;
+		}
+		digNum -= 1;
+	}
+}
+
 int strlen (const char * input) {
 	int i = 0;
 	while (input[i++] != 0) {}

@@ -63,7 +63,7 @@ global handleSysCall
 handleSysCall:
 	pushad
 	systemSelectors
-
+	
 	mov eax, kPrintLockNum
 	push eax
 	call lock_vector
@@ -83,6 +83,7 @@ handleSysCall:
 	push eax
 	call unlock_vector
 	add esp, 4
+	; int 0x81
 
 	restSystemSelectors
 	popad

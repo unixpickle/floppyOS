@@ -65,9 +65,14 @@ void kmain () {
 	}
 	kprintok();
 
-	kprint("Floppy read ... ");
+	kprint("Floppy read (testprog) ... ");
 	// sector 3, drive 0, track 0, head 0, count 1, etc.
 	if (floppy_simple_read(0, 3, 0, 0, 1, myBuf) != osOK) {
+		kprinterr();
+	}
+	kprintok();
+	kprint("Floppy read (testprog1) ... ");
+	if (floppy_simple_read(0, 1, 1, 0, 1, myBuf+512) != osOK) {
 		kprinterr();
 	}
 	kprintok();
@@ -78,9 +83,14 @@ void kmain () {
 	kprint("Resetting task space ... ");
 	task_list_reset();
 	kprintok();
-	kprint("Starting test program ... ");
+	kprint("Starting testprog ... ");
 	pid_t pid;
 	if (task_start(myBuf, 512, &pid) != osOK) {
+		kprinterr();
+	}
+	kprintok();
+	kprint("Starting testprog1 ... ");
+	if (task_start(myBuf+512, 512, &pid) != osOK) {
 		kprinterr();
 	}
 	kprintok();

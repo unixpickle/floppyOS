@@ -121,8 +121,10 @@ copyRegisters32done:
 noPLChange:
 
 taskswitch_loadnew:
+
 	; setup our new task
 	call task_setcur
+
 
 	; C subroutine for configuring the LDT segment descriptor
 	; and TSS descriptor contents
@@ -134,9 +136,11 @@ taskswitch_loadnew:
 	add esp, 4
 	mov ebx, eax 				; task_t pointer
 
+	
 	; change TSS and LDT
 	mov ax, 0x20
 	lldt ax
+
 	
 	str ax
 	cmp ax, 0x2b
@@ -145,6 +149,7 @@ taskswitch_loadnew:
 	ltr ax
 
 skipLTR:
+
 
 	; load up the GS, FS, ES registers
 	;; 52 = ds
@@ -162,6 +167,8 @@ skipLTR:
 	mov fs, [ebx+58]
 	mov es, [ebx+60]
 	mov ax, [ebx+62]
+	
+	
 	; setup stack for iret
 	and ax, 3
 	jz standardIRET
@@ -202,6 +209,7 @@ standardIRET:
 	mov ebp, [ebx+28]
 	mov edx, [ebx+40]
 	mov ecx, [ebx+44]
+
 	; old eax
 	mov eax, [ebx+48]
 	push eax
@@ -214,7 +222,7 @@ standardIRET:
 	; restore ebx and eax
 	pop ebx
 	pop eax
-	
+
 	iret
 	; perform task switching iret
 

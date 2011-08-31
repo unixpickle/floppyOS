@@ -5,7 +5,7 @@ compile: bin/bsect bin/kernel
 bin/bsect: src/bootloader/bsect.s
 	nasm -f bin src/bootloader/bsect.s -o bin/bsect
 
-bin/kernel: bin/kern bin/testprog bin/kern/pit.o bin/kern/interrupt.o bin/kern/idtload.o bin/kern/floppyasm.o bin/kern/floppyc.o bin/kern/dma.o bin/kern/simplefloppy.o bin/kern/keyboard.o bin/kern/tasks.o bin/kern/switch.o bin/kern/lock.o bin/kern/kpi.o bin/kern/kmain.o bin/kern/kstdio.o bin/kern/kstdlib.o bin/kern/picinit.o bin/kern/idtinit.o
+bin/kernel: bin/kern bin/testprog bin/testprog1 bin/kern/pit.o bin/kern/interrupt.o bin/kern/idtload.o bin/kern/floppyasm.o bin/kern/floppyc.o bin/kern/dma.o bin/kern/simplefloppy.o bin/kern/keyboard.o bin/kern/tasks.o bin/kern/switch.o bin/kern/lock.o bin/kern/kpi.o bin/kern/kmain.o bin/kern/kstdio.o bin/kern/kstdlib.o bin/kern/picinit.o bin/kern/idtinit.o
 	nasm -f elf src/kernel/kernentry.s -o bin/kernentry.o	
 	ld bin/kernentry.o bin/kern/* -Ttext 0x1000 -e kentry --oformat binary -s -o bin/kernel
 
@@ -58,7 +58,10 @@ bin/kern/pit.o: bin/kern
 	nasm -f elf src/kernel/idt/pit.s -o bin/kern/pit.o
 
 bin/testprog:
-	nasm -f bin src/testprog.s -o bin/testprog
+	nasm -f bin src/programs/testprog.s -o bin/testprog
+
+bin/testprog1:
+	nasm -f bin src/programs/testprog1.s -o bin/testprog1
 
 bin/kern/floppyasm.o: bin/kern
 	nasm -f elf src/kernel/drives/floppy.s -o bin/kern/floppyasm.o
@@ -68,7 +71,7 @@ bin/kern/floppyc.o: bin/kern
 
 image: bin/makeimg
 	cp template.img output.img
-	bin/makeimg output.img bin/bsect bin/kernel bin/testprog
+	bin/makeimg output.img bin/bsect bin/kernel bin/testprog bin/testprog1
 
 bin/makeimg: src/makeimg.c
 	gcc src/makeimg.c -o bin/makeimg

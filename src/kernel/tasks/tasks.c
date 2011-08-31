@@ -73,6 +73,7 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 	bool isGood = true;
 	while (true) {
 		// check if it's good
+		isGood = true;
 		for (i = 0; i < *countBuf; i++) {
 			unsigned int offset = sizeof(task_t) * i;
 			task_t * task = (task_t *)((unsigned int)kTaskListBase + offset);
@@ -85,9 +86,18 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 			break;
 		} else baseAddr += kTaskSpacePerKernTask + kTaskSpacePerTask;
 	}
+	// kprint("Base address: ");
+	// kprintnum((unsigned int)baseAddr);
 	kmemcpy(baseAddr, codeBase, length);
 	// create our task
-	task_t * ourTask = *countBuf * sizeof(task_t) + kTaskListBase;
+	// kprint("Task count: ");
+	// kprintnum(*countBuf);
+	// kprint("Sizeof(task_t): ");
+	// kprintnum(sizeof(task_t));
+	unsigned int theOffset = (countBuf[0] * sizeof(task_t)) + ((unsigned int)kTaskListBase);
+	task_t * ourTask = (task_t *)theOffset;
+	// kprint("Task ptr (start): ");
+	// kprintnum(ourTask);
 	for (i = 0; i < sizeof(task_t); i++) {
 		((char *)ourTask)[i] = 0;
 	}
@@ -136,9 +146,14 @@ static void task_setup_ldt (task_t * task) {
 }
 
 void * task_translate_addr (void * existing) {
+	// asm("cli");
 	int * cur = kTaskCurrent;
 	unsigned int ptr = *cur * sizeof(task_t) + (unsigned int)kTaskListBase;
 	task_t * t = (task_t *)ptr;
+	// kprint("Translated: ");
+	// kprintnum(existing);
+	// kprint("To string: ");
+	// kprint((void *)((unsigned int)(t->basePtr) + (unsigned int)existing));
 	return (void *)((unsigned int)(t->basePtr) + (unsigned int)existing);
 }
 
@@ -164,7 +179,6 @@ task_t * task_config (void * gdtBase) {
 	tssEntry[6] = 0;
 
 	// fix-up TSS to fit our task
-
 	unsigned char * tssBuffer = (char *)0x9000;
 	unsigned short dataSelector = 0x13;
 	unsigned int kernelStart = (unsigned int)(task->basePtr) + kTaskSpacePerTask + kTaskSpacePerKernTask - 1;
@@ -198,6 +212,12 @@ task_t * task_config (void * gdtBase) {
 	// copy ss0
 	tssBuffer[0x08] = 0x10;
 	tssBuffer[0x09] = 0;
+	
+	// kprint("Task address: ");
+	// kprintnum(task);
+	// kprint("Base ptr: ");
+	// kprintnum(task->basePtr);
+	
 	return task;
 }
 

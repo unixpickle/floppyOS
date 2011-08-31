@@ -12,14 +12,15 @@
 int main (int argc, char * argv[]) {
 	char * boot_buf = (char *)malloc(bootbuf_len);
 	bzero(boot_buf, bootbuf_len);
-	if (argc != 5) {
-		fprintf(stderr, "Usage: %s <image.img> <bootloader> <kernel> <testprog>\r\n", argv[0]);
+	if (argc != 6) {
+		fprintf(stderr, "Usage: %s <image.img> <bootloader> <kernel> <testprog1> <testprog2>\r\n", argv[0]);
 		exit(1);
 	}
 
 	FILE * bsect = fopen(argv[2], "r");
 	FILE * kernel = fopen(argv[3], "r");
 	FILE * testprog = fopen(argv[4], "r");
+	FILE * testprog2 = fopen(argv[5], "r");
 	FILE * fp = fopen(argv[1], "r+");
 
 	// bootloader
@@ -45,10 +46,17 @@ int main (int argc, char * argv[]) {
 	fread(boot_buf, 1, 512, testprog);
 	fseek(fp, 512*2, SEEK_SET);
 	fwrite(boot_buf, 1, 512, fp);
+	
+	// testprog2 (sector 1, track 1, head 0)
+	bzero(boot_buf, 512);
+	fread(boot_buf, 1, 512, testprog2);
+	fseek(fp, 512*18*2, SEEK_SET);
+	fwrite(boot_buf, 1, 512, fp);
 
 	// close
 	fclose(kernel);
 	fclose(bsect);
 	fclose(testprog);
+	fclose(testprog2);
 	fclose(fp);
 }
