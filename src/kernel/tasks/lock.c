@@ -41,8 +41,7 @@ void lock_vector (int index) {
 		while (lockBase[index + 1] != 0) {
 			unlock_cpu();
 			if (lock_get_taskswitch()) {
-				// asm("int $0x81"); // swap out if needed
-				asm("hlt");
+				asm("int $0x81"); // swap out if needed
 			}
 			lock_cpu();
 		}
@@ -63,9 +62,7 @@ void unlock_vector (int index) {
 	// trigger a task switch to resign control.
 	unlock_cpu();
 	if (lock_get_taskswitch()) {
-		// kprint("Not unlocking switch");
 		asm("int $0x81");
-		// kprint("Done switch!");
 	}
 }
 

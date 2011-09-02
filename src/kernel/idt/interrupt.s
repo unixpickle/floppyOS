@@ -75,13 +75,21 @@ handleSysCall:
 	call task_translate_addr
 	add esp, 4
 	
-	cli
+	push eax
+	mov eax, kPrintLockNum
+	push eax
+	call lock_vector
+	add esp, 4
+	pop eax
+	
 	push eax
 	call kprint
 	pop eax
-	sti
 	
-	int 0x81
+	mov eax, kPrintLockNum
+	push eax
+	call unlock_vector
+	add esp, 4
 
 	restSystemSelectors
 	popad
