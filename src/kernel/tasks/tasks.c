@@ -67,7 +67,7 @@ osStatus task_kill (pid_t pid) {
 
 osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 	// find the next available program space
-	void * baseAddr = kTaskSpaceStart;
+	char * baseAddr = kTaskSpaceStart;
 	int * countBuf = kTaskCount;
 	int i;
 	bool isGood = true;
@@ -86,21 +86,16 @@ osStatus task_start (char * codeBase, unsigned short length, pid_t * pid) {
 			break;
 		} else baseAddr += kTaskSpacePerKernTask + kTaskSpacePerTask;
 	}
-	// kprint("Base address: ");
-	// kprintnum((unsigned int)baseAddr);
+	// copy code to code space
 	kmemcpy(baseAddr, codeBase, length);
 	// create our task
-	// kprint("Task count: ");
-	// kprintnum(*countBuf);
-	// kprint("Sizeof(task_t): ");
-	// kprintnum(sizeof(task_t));
 	unsigned int theOffset = (countBuf[0] * sizeof(task_t)) + ((unsigned int)kTaskListBase);
 	task_t * ourTask = (task_t *)theOffset;
-	// kprint("Task ptr (start): ");
-	// kprintnum(ourTask);
+	char * ourTaskBuf = (char *)ourTask;
 	for (i = 0; i < sizeof(task_t); i++) {
-		((char *)ourTask)[i] = 0;
+		ourTaskBuf[i] = 0;
 	}
+
 	ourTask->basePtr = baseAddr;
 	task_setup_ldt(ourTask);
 	*countBuf += 1;
@@ -133,27 +128,16 @@ static void task_setup_ldt (task_t * task) {
 	task->ldt[15] = task->ldt[7];
 
 	// set the task's segments to point to the LDT
-	task->cs = 0x07; // rpl = 3, LDT = true, segment = 0
-	task->ds = 0x0f; // rpl = 3, LDT = true, segment = 1
-	task->gs = task->ds;
-	task->es = task->ds;
-	task->fs = task->ds;
-	task->ss = task->ds;
-	task->esp = 0xffff;
-	task->ebp = 0xffff;
-	task->ebx = 0;
-	task->eip = 0;	// start at first byte of code
+	// task->cs = 0x07; // rpl = 3, LDT = true, segment = 0
+	// task->ds = 0x0f; // rpl = 3, LDT = true, segment = 1
+	// task->esp = 0xffff;
+	// task->ebp = 0xffff;
 }
 
 void * task_translate_addr (void * existing) {
-	// asm("cli");
 	int * cur = kTaskCurrent;
 	unsigned int ptr = *cur * sizeof(task_t) + (unsigned int)kTaskListBase;
 	task_t * t = (task_t *)ptr;
-	// kprint("Translated: ");
-	// kprintnum(existing);
-	// kprint("To string: ");
-	// kprint((void *)((unsigned int)(t->basePtr) + (unsigned int)existing));
 	return (void *)((unsigned int)(t->basePtr) + (unsigned int)existing);
 }
 
@@ -212,12 +196,7 @@ task_t * task_config (void * gdtBase) {
 	// copy ss0
 	tssBuffer[0x08] = 0x10;
 	tssBuffer[0x09] = 0;
-	
-	// kprint("Task address: ");
-	// kprintnum(task);
-	// kprint("Base ptr: ");
-	// kprintnum(task->basePtr);
-	
+
 	return task;
 }
 

@@ -10,7 +10,8 @@ _start:
 spin:
 	; makes other tasks get more CPU time
 	; by co-operating with the kernel
-	int 0x81
+	; int 0x81
 	jmp _start
+	; jmp spin
 
 coolString: db 'Hello, task world!',10,0

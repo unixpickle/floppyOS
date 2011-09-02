@@ -1,11 +1,15 @@
 kPrintLockNum equ 1
 
 extern kprint
+extern kdelay
 extern kprintnum
 extern PIC_sendEOI
 extern khandle_key
 extern lock_vector
 extern unlock_vector
+extern lock_cpu
+extern unlock_cpu
+extern task_translate_addr
 
 %macro systemSelectors 0
 
@@ -57,39 +61,31 @@ handleMathException:
 	restSystemSelectors
 	popad
 	iret
+	
+mathExceptionMsg: db 'Exception: Divide by zero',10,0
 
-extern task_translate_addr
 global handleSysCall
 handleSysCall:
+	sti
 	pushad
 	systemSelectors
 	
-	mov eax, kPrintLockNum
-	push eax
-	call lock_vector
-	add esp, 4
-
 	mov eax, [esp+20]
-
 	push eax
 	call task_translate_addr
 	add esp, 4
-
+	
+	cli
 	push eax
 	call kprint
-	add esp, 4
-
-	mov eax, kPrintLockNum
-	push eax
-	call unlock_vector
-	add esp, 4
-	; int 0x81
+	pop eax
+	sti
+	
+	int 0x81
 
 	restSystemSelectors
 	popad
 	iret
-
-mathExceptionMsg: db 'Exception: Divide by zero',10,0
 
 global handleInvalidOpcode
 handleInvalidOpcode:

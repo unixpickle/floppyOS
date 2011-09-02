@@ -71,11 +71,11 @@ void kmain () {
 		kprinterr();
 	}
 	kprintok();
-	kprint("Floppy read (testprog1) ... ");
+	/*kprint("Floppy read (testprog1) ... ");
 	if (floppy_simple_read(0, 1, 1, 0, 1, myBuf+512) != osOK) {
 		kprinterr();
 	}
-	kprintok();
+	kprintok();*/
 
 	// let it know that we have IDTs set up.
 	lock_set_taskswitch(true);
@@ -89,15 +89,16 @@ void kmain () {
 		kprinterr();
 	}
 	kprintok();
-	kprint("Starting testprog1 ... ");
+	/*kprint("Starting testprog1 ... ");
 	if (task_start(myBuf+512, 512, &pid) != osOK) {
 		kprinterr();
 	}
-	kprintok();
+	kprintok();*/
+	asm("sti");
 	unlock_cpu();
 	
 	// if our task didn't start, this should work.
-	asm("sti");
+	
 	while (1) {
 	/*	char kbuf[2];
 		kbuf[1] = 0;

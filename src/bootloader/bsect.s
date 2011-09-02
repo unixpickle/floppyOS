@@ -49,6 +49,10 @@ _start:
 	mov al, 0x03
 	mov ah, 0x00
 	int 0x10
+	
+	; set it to use a better dataline
+	mov ax, 2401h
+	int 15h
 
 	; switch to protected mode...
 	cli 
